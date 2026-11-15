@@ -1,0 +1,43 @@
+# ═══════════════════════════════════════════════════════════════
+#  Zero Cloud Service — upstream.lock  (AUTO-GENERATED — edit mat karo)
+#  Har sync pe scripts/check-upstream.sh ise regenerate karta hai.
+#  Matlab: ye stack upstream repos ke in commits/tags tak track karta hai.
+# ═══════════════════════════════════════════════════════════════
+last_synced: "2026-11-15T14:53:04Z"
+repos:
+  "floci-io/floci":
+    branch: "main"
+    sha: "4fc41cc683e52c6af879cd92820a24bd445d5e12"
+    release: "2.5.0"
+  "floci-io/floci-az":
+    branch: "main"
+    sha: "226c6dcdbad629e9d840b9b19ef6fb3c7de7209d"
+    release: "0.17.0"
+  "floci-io/floci-gcp":
+    branch: "main"
+    sha: "98829d47d8cf6ac7000eb2ed12f45259522339fd"
+    release: "0.13.0"
+  "floci-io/floci-ui":
+    branch: "main"
+    sha: "bf389ea220cbb8ec75debc52b9090008ece3adb3"
+    release: "0.7.0"
+  "aws/aws-emulator":
+    branch: "main"
+    sha: "813af480bf7f16d5418b64e4f5644a74a7da11c5"
+    release: "v1.0.385"
+  "Azure/Azurite":
+    branch: "main"
+    sha: "f049fde4517aa76917266dc637ff525f8990210b"
+    release: "v3.37.0"
+  "fsouza/fake-gcs-server":
+    branch: "main"
+    sha: "3c29d20789f6475f65d2554ad6898c4afd7124bb"
+    release: "v1.56.1"
+  "drehelis/gcp-emulator-ui":
+    branch: "main"
+    sha: "3fe08b7ee0bfb2f43c2080e8d584379ba3d11844"
+    release: "v0.0.24"
+  "omab/cloudbox":
+    branch: "main"
+    sha: "7e9d87d1af8418485e7d4fe968b73781ea76ac1c"
+    release: "-"

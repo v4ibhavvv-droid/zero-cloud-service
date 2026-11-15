@@ -22,6 +22,7 @@ Har step pehle verify, phir aage badha gaya. Sab functional tests PASS.
 | 15 | **landing** up | ✅ | :3010 HTTP 200 (fix: :3000 pe Perplexica chal raha tha) |
 | 16 | **FULL STACK** — sab 13 containers + 15 endpoints | ✅ | `make health` — sab UP; total RAM ~1.24GB |
 | 17 | **One-Click files** — START/STOP/STATUS `.command` | ✅ | 3 files chmod +x + `bash -n` syntax OK; full STOP→START cycle ×3 tested: STOP = 0 containers bachе, START = "Saare 13 services UP" + health-check saare ✅. Fixes: 9297 ko `https` se probe (HTTP-only probe hamesha fail karta tha), targeted auto-repair (sirf down service restart), sidecar :4500 wait-loop, pull `--ignore-buildable-images` flag error removed (conditional pull) |
+| 18 | **Upstream auto-sync** — `scripts/check-upstream.sh` + `.github/workflows/sync-upstream.yml` + `upstream.yml` manifest | ✅ | Script 9/9 repos fetch karke manifest regenerate karta hai (no-release repo `-` handle, idempotent no-change path verified); workflow daily 09:00 IST cron + manual dispatch; sync job manifest auto-commit karta hai; smoke job CI pe full stack START-file se boot karke 5 SDK tests chalata hai (AWS CLI / Azure / GCS / Firestore / PubSub); Dockerfile dual-arch via TARGETARCH (CI amd64 + Mac arm64) |
 
 ## Fixes applied during verification
 1. Azurite: `--skipApiVersionCheck` (naye SDK API version ke liye)
@@ -32,6 +33,7 @@ Har step pehle verify, phir aage badha gaya. Sab functional tests PASS.
 6. landing: 3010 pe (3000 pe user ka Perplexica)
 7. aws-emulator: arm64 RPM + `-b 0.0.0.0` + data bind-mount project folder me
 8. START script hardening: 9297 ko https se probe, 3-wave staged start (Docker daemon RAM-crash se bachav), targeted auto-repair (sirf down service restart), floci sidecar :4500 wait-loop, conditional image pull (flag error removed)
+9. auto-sync script: gh api 404-body capture (`|| true` — cloudbox no-release repo), timestamp idempotency (sirf repos-section compare karta hai, no-noise commits)
 
 ## Working sample scripts (proof + reusable)
 - `samples/azure-verify.js` — Azurite blob CRUD (SDK)

@@ -9,7 +9,8 @@
 [![Platform](https://img.shields.io/badge/platform-macOS%20Apple%20Silicon-black?logo=apple)](https://www.apple.com/mac/)
 [![Docker](https://img.shields.io/badge/docker-compose%20v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Verification](https://img.shields.io/badge/verified-17%2F17%20checks-success)](verification.md)
+[![Verification](https://img.shields.io/badge/verified-18%2F18%20checks-success)](verification.md)
+[![Auto-sync](https://github.com/v4ibhavvv-droid/zero-cloud-service/actions/workflows/sync-upstream.yml/badge.svg)](https://github.com/v4ibhavvv-droid/zero-cloud-service/actions/workflows/sync-upstream.yml)
 [![Cloud Bill](https://img.shields.io/badge/monthly%20cost-%240-brightgreen)](#-why-this-exists)
 
 *No cloud account. No credit card. No free-tier limits. No data leaving your machine.*
@@ -186,8 +187,27 @@ Every service in this stack passed a **functional test through its official SDK/
 | Pub/Sub SDK: topic → subscription → publish → **message received** | ✅ |
 | Cloudbox: bucket + topic + Secrets API | ✅ |
 | 13/13 endpoints + staged boot + auto-repair + one-click files | ✅ |
+| Upstream auto-sync: manifest + daily CI smoke (full stack + SDK tests) | ✅ |
 
-17/17 checks. Re-run anytime: `make health` (or double-click **STATUS**).
+18/18 checks. Re-run anytime: `make health` (or double-click **STATUS**).
+
+## 🔄 Auto-sync with the 9 upstream projects
+
+This stack runs on published images, and a daily GitHub Action keeps it honest about what it's built on:
+
+1. **Daily at 09:00 IST** — [`scripts/check-upstream.sh`](scripts/check-upstream.sh) asks the GitHub API for the latest commit SHA + release tag of all 9 upstream repos.
+2. **Drift → auto-commit** — if anything moved, the workflow regenerates [`upstream.yml`](upstream.yml) — a generated manifest recording exactly which upstream state your stack tracks — and commits it to `main`. Your commit history becomes a changelog of upstream evolution, with zero manual work.
+3. **Full-stack smoke test in CI** — the same workflow then boots the **entire 14-container stack on a GitHub runner, using the exact same `START-ZeroCloud.command` file you double-click**, and runs the official SDK tests: AWS CLI bucket create/list, Azure Blob CRUD, GCS object CRUD, Firestore CRUD, and a Pub/Sub publish→receive round-trip. If an upstream release ever breaks something, the run turns 🔴 before it can surprise you.
+
+```text
+Actions tab → sync-upstream → ✅ green = upstream checked + stack verified
+                             🔴 red  = upstream broke something — read the log
+```
+
+Your side:
+- **Nothing.** The bot commits by itself (`github-actions[bot]`).
+- Want the newest image versions on your laptop? `make update` — pulls and recreates changed containers.
+- Want to check right now? `make sync`, or *Actions → sync-upstream → Run workflow*.
 
 ---
 
@@ -203,6 +223,8 @@ make aws       # AWS stack only
 make azure     # Azure stack only
 make gcp       # GCP stack only
 make reset     # ⚠️ wipe ./data — fresh cloud
+make sync      # 9 upstream repos check → upstream.yml refresh
+make update    # naye images pull + recreate (upstream ke latest pe)
 ```
 
 ---

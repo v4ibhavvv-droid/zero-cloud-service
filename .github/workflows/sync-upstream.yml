@@ -1,0 +1,79 @@
+# ═══════════════════════════════════════════════════════════════════
+#  ZERO CLOUD SERVICE — upstream auto-sync
+#
+#  Roz 09:00 IST (03:30 UTC) pe:
+#   1) 9 upstream repos ke naye commits/tags check → manifest auto-commit
+#   2) FULL STACK smoke test CI pe: 14 containers + official SDK tests
+#      (upstream ne kuch bhi toda to ye run RED hoga — turant pata chalega)
+# ═══════════════════════════════════════════════════════════════════
+name: sync-upstream
+
+on:
+  schedule:
+    - cron: "30 3 * * *"    # 09:00 IST daily
+  workflow_dispatch:        # manual: Actions tab → Run workflow
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Check 9 upstream repos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check 9 upstream repos (latest SHA + release tag)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-upstream.sh
+
+      - name: Auto-commit manifest (agar upstream me changes aaye)
+        run: |
+          if [ -n "$(git status --porcelain upstream.yml)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add upstream.yml
+            git commit -m "sync(upstream): manifest refreshed — $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+            echo "🚀 Manifest pushed — upstream changes ab is repo me tracked hain."
+          else
+            echo "Koi upstream change nahi — manifest already current."
+          fi
+
+  smoke:
+    name: Full-stack smoke test (CI pe)
+    needs: sync
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot the FULL stack — same START file jo user double-click karta hai
+        run: bash START-ZeroCloud.command </dev/null
+
+      - name: SDK test — AWS CLI (floci :4566)
+        run: |
+          docker run --rm --add-host=host.docker.internal:host-gateway \
+            -e AWS_ENDPOINT_URL=http://host.docker.internal:4566 \
+            -e AWS_DEFAULT_REGION=us-east-1 \
+            -e AWS_ACCESS_KEY_ID=test -e AWS_SECRET_ACCESS_KEY=test \
+            public.ecr.aws/aws-cli/aws-cli s3 mb s3://zcs-ci-${{ github.run_number }} && \
+          docker run --rm --add-host=host.docker.internal:host-gateway \
+            -e AWS_ENDPOINT_URL=http://host.docker.internal:4566 \
+            -e AWS_DEFAULT_REGION=us-east-1 \
+            -e AWS_ACCESS_KEY_ID=test -e AWS_SECRET_ACCESS_KEY=test \
+            public.ecr.aws/aws-cli/aws-cli s3 ls | tail -1
+
+      - name: SDK test — Azure Blob (Azurite)
+        run: docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/samples:/w" -w /w node:22-alpine sh -c "npm i @azure/storage-blob --no-audit --no-fund --loglevel=error >/dev/null 2>&1 && node azure-verify.js"
+
+      - name: SDK test — GCS (fake-gcs-server)
+        run: docker run --rm --add-host=host.docker.internal:host-gateway -e STORAGE_EMULATOR_HOST=http://host.docker.internal:4443/storage/v1 -v "$PWD/samples:/w" -w /w node:22-alpine sh -c "npm i @google-cloud/storage@7 --no-audit --no-fund --loglevel=error >/dev/null 2>&1 && node gcs-verify.js"
+
+      - name: SDK test — Firestore (official emulator)
+        run: docker run --rm --add-host=host.docker.internal:host-gateway -e FIRESTORE_EMULATOR_HOST=host.docker.internal:8086 -v "$PWD/samples:/w" -w /w node:22-alpine sh -c "npm i @google-cloud/firestore --no-audit --no-fund --loglevel=error >/dev/null 2>&1 && node firestore-verify.js"
+
+      - name: SDK test — Pub/Sub (official emulator)
+        run: docker run --rm --add-host=host.docker.internal:host-gateway -e PUBSUB_EMULATOR_HOST=host.docker.internal:8085 -v "$PWD/samples:/w" -w /w node:22-alpine sh -c "npm i @google-cloud/pubsub --no-audit --no-fund --loglevel=error >/dev/null 2>&1 && node pubsub-verify.js"

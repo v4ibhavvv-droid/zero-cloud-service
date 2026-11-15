@@ -4,7 +4,7 @@
 
 COMPOSE = docker compose
 
-.PHONY: up down stop restart status logs health reset help aws azure gcp uis
+.PHONY: up down stop restart status logs health reset help aws azure gcp uis sync update
 
 ## Sab kuch start (pehli baar image pull/build karega)
 up:
@@ -56,6 +56,15 @@ gcp:
 ## Sirf UIs
 uis:
 	$(COMPOSE) up -d floci-ui gcp-ui landing
+
+## Upstream sync check — 9 repos ke naye commits/tags → upstream.yml refresh
+sync:
+	bash scripts/check-upstream.sh
+
+## Images update — upstream ke naye versions pull karke containers recreate
+update:
+	$(COMPOSE) pull
+	$(COMPOSE) up -d
 
 help:
 	@grep -E '^## ' Makefile | sed 's/## /  /'

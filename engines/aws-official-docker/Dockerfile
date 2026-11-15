@@ -1,12 +1,18 @@
 # AWS Emulator (aws/aws-emulator) — official Docker path
 # Source: https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-docker.html
-# Apple Silicon (aarch64) package used — matches this Mac.
-# NOTE: We intentionally do NOT use `aws-emulator-x86_64.rpm` here.
+# Multi-arch: BuildKit TARGETARCH dete hai — Mac (arm64) aur CI (amd64) dono pe chalta hai.
+# NOTE: Rust source se build NAHI karte (100GB) — official Linux RPM install hota hai.
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal
 
-ADD https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/latest/aws-emulator-aarch64.rpm /tmp/aws-emulator.rpm
+ARG TARGETARCH
 
-RUN rpm -i /tmp/aws-emulator.rpm && rm /tmp/aws-emulator.rpm \
+RUN command -v curl >/dev/null 2>&1 || dnf -y -q install curl \
+    && case "${TARGETARCH:-arm64}" in \
+         arm64) RPM=aws-emulator-aarch64 ;; \
+         *)     RPM=aws-emulator-x86_64 ;; \
+       esac \
+    && curl -fsSL "https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/latest/${RPM}.rpm" -o /tmp/aws-emulator.rpm \
+    && rpm -i /tmp/aws-emulator.rpm && rm -f /tmp/aws-emulator.rpm \
     && mkdir -p /home/emulator && chown 1000 /home/emulator
 
 USER 1000
