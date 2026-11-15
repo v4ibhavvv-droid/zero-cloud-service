@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero Cloud Service — Local AWS + Azure + GCP Lab</title>
+<style>
+  :root{
+    --bg:#0b0f17; --card:#121826; --line:#1e2638; --txt:#e6e9f0; --mut:#8b93a7;
+    --aws:#ff9900; --az:#0078d4; --gcp:#34a853; --ui:#7c5cff; --ok:#2ecc71;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:40px 24px}
+  .wrap{max-width:1100px;margin:0 auto}
+  header{text-align:center;margin-bottom:36px}
+  h1{font-size:34px;font-weight:800;letter-spacing:-.5px}
+  h1 span{background:linear-gradient(90deg,var(--aws),var(--az),var(--gcp));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--mut);margin-top:8px;font-size:15px}
+  .badges{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .badge{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px 14px;font-size:12.5px;color:var(--mut)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;transition:transform .15s,border-color .15s}
+  .card:hover{transform:translateY(-3px);border-color:#3b465e}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 10px;border-radius:6px;margin-bottom:12px}
+  .t-aws{background:rgba(255,153,0,.15);color:var(--aws)}
+  .t-az{background:rgba(0,120,212,.15);color:var(--az)}
+  .t-gcp{background:rgba(52,168,83,.15);color:var(--gcp)}
+  .t-ui{background:rgba(124,92,255,.15);color:var(--ui)}
+  h2{font-size:17px;margin-bottom:6px}
+  p{color:var(--mut);font-size:13.5px;line-height:1.55;margin-bottom:14px}
+  a.btn{display:inline-block;background:#1a2234;border:1px solid var(--line);color:var(--txt);text-decoration:none;padding:8px 16px;border-radius:10px;font-size:13.5px;font-weight:600}
+  a.btn:hover{background:#232c44}
+  .url{display:block;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--ok);margin-top:10px;word-break:break-all}
+  footer{margin-top:40px;text-align:center;color:var(--mut);font-size:12.5px;line-height:1.8}
+  code{background:#0d1420;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:12px;color:#9fd0ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>☁️ <span>Zero Cloud Service</span></h1>
+    <div class="sub">Apna personal AWS + Azure + GCP — sab kuch localhost pe, ₹0 me</div>
+    <div class="badges">
+      <span class="badge">3 Clouds</span>
+      <span class="badge">188+ Services</span>
+      <span class="badge">6 GUIs</span>
+      <span class="badge">9 Repos Combined</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <span class="tag t-ui">Main Console</span>
+      <h2>🖥️ Floci UI — Unified Console</h2>
+      <p>Teeno clouds (AWS + Azure + GCP) ek hi web console me. Resources browse/create/delete, service catalog sab kuch.</p>
+      <a class="btn" href="http://localhost:4510">Open Console →</a>
+      <span class="url">http://localhost:4510</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-aws">AWS</span>
+      <h2>🟠 Floci — AWS Engine (128 services)</h2>
+      <p>S3, Lambda (real containers!), DynamoDB, RDS, EKS, Cognito, API Gateway... Terraform/CDK ready.</p>
+      <a class="btn" href="http://localhost:4566/_floci/ui">AWS Web Console →</a>
+      <span class="url">http://localhost:4566/_floci/ui</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-aws">AWS Official</span>
+      <h2>🟠 AWS Emulator (Amazon official)</h2>
+      <p>Amazon ka apna emulator — fidelity ground-truth. CLI/SDK endpoint (HTTPS, self-signed cert).</p>
+      <span class="url">https://localhost:9297</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-az">Azure</span>
+      <h2>🔵 Floci-AZ — Azure Engine (32 services)</h2>
+      <p>Cosmos DB (sab APIs), Key Vault, Blob/Queue/Table, Functions, VMs, Event Hubs, App Config.</p>
+      <span class="url">API: http://localhost:4577</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-az">Azure Official</span>
+      <h2>🔵 Azurite — Microsoft Storage</h2>
+      <p>Blob/Queue/Table official emulator. Free <b>Azure Storage Explorer</b> app se connect karo:</p>
+      <p style="font-family:ui-monospace,monospace;font-size:10.5px;color:#9fd0ff">DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;</p>
+      <span class="url">http://localhost:10000 · 10001 · 10002</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-gcp">GCP</span>
+      <h2>🟢 Floci-GCP — GCP Engine (28 services)</h2>
+      <p>GCS, Pub/Sub, Firestore, BigQuery, Cloud Run, GKE, IAM, KMS — sab ek port pe.</p>
+      <span class="url">API: http://localhost:4588</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-gcp">GCP Browser</span>
+      <h2>🟢 GCP Emulator UI — Data Browser</h2>
+      <p>Pub/Sub topics, Firestore query builder, buckets drag'n'drop — GCP ka deep data view.</p>
+      <a class="btn" href="http://localhost:9090">Open GCP UI →</a>
+      <span class="url">http://localhost:9090</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-gcp">GCP Extra</span>
+      <h2>🟢 Cloudbox — BigQuery, Tasks, KMS...</h2>
+      <p>"LocalStack for GCP": BigQuery, Spanner, Tasks, Scheduler, KMS, Secret Manager, Logging + admin console.</p>
+      <a class="btn" href="http://localhost:8888">Cloudbox Admin →</a>
+      <span class="url">http://localhost:8888</span>
+    </div>
+
+    <div class="card">
+      <span class="tag t-gcp">GCS</span>
+      <h2>🟢 fake-gcs-server — Cloud Storage</h2>
+      <p>GCS standard emulator (fsouza). <code>STORAGE_EMULATOR_HOST=http://localhost:4443</code> set karke SDK lagao.</p>
+      <span class="url">http://localhost:4443</span>
+    </div>
+  </div>
+
+  <footer>
+    <div>⚡ Start: <code>docker compose up -d</code> &nbsp;·&nbsp; 🩺 Health: <code>make health</code> &nbsp;·&nbsp; 🧹 Reset: <code>make reset</code></div>
+    <div style="margin-top:6px">9 repos: floci · floci-az · floci-gcp · floci-ui · aws/aws-emulator · Azurite · fake-gcs-server · gcp-emulator-ui · cloudbox</div>
+  </footer>
+</div>
+</body>
+</html>

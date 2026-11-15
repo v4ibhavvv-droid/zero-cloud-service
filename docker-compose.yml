@@ -1,0 +1,263 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  ZERO CLOUD SERVICE — Local AWS + Azure + GCP Lab
+#  9 repos, 1 command:  docker compose up -d
+#  Sab kuch isi folder ke andar (data/ me persist hota hai)
+# ═══════════════════════════════════════════════════════════════════════════
+name: zero-cloud-service
+
+networks:
+  cloud:
+    name: floci_default          # floci isi network pe Lambda/RDS containers spawn karta hai
+
+services:
+
+  # ══════════════════════════ AWS ══════════════════════════
+
+  # 1) Floci — main AWS engine (128 services, MIT) :4566
+  floci:
+    image: floci/floci:latest-compat
+    container_name: zcs-floci-aws
+    tty: true
+    ports:
+      - "4566:4566"
+      - "6379-6399:6379-6399"    # ElastiCache / Redis proxy
+      - "7001-7019:7001-7019"    # RDS proxy (19 slots)
+      - "9200-9209:9200-9209"    # OpenSearch proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # real Lambda/RDS containers
+      - ./data/floci:/app/data
+    environment:
+      FLOCI_STORAGE_MODE: persistent
+      FLOCI_SERVICES_DOCKER_NETWORK: floci_default
+      FLOCI_SERVICES_RDS_PROXY_BASE_PORT: "7001"
+      FLOCI_HOSTNAME: floci
+      FLOCI_BASE_URL: http://floci:4566
+      FLOCI_SERVICES_ELASTICACHE_CLUSTER_ANNOUNCE_HOSTNAME: localhost.floci.io
+      FLOCI_SERVICES_LAMBDA_HOT_RELOAD_ENABLED: "true"
+      FLOCI_TLS_ENABLED: "true"
+    restart: unless-stopped
+    networks:
+      cloud:
+        aliases:
+          - localhost.floci.io
+
+  # 2) AWS Emulator — Amazon ka official (CC0) :9297 (HTTPS)
+  aws-emulator:
+    build:
+      context: ./engines/aws-official-docker
+      dockerfile: Dockerfile
+    container_name: zcs-aws-emulator
+    command: ["-p", "9297"]
+    ports:
+      - "127.0.0.1:9297:9297"
+    environment:
+      HOME: /home/emulator
+    volumes:
+      - ./data/aws-emulator:/home/emulator/.aws/emulator   # creds+cert project folder me
+    mem_limit: 1g
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  # ══════════════════════════ AZURE ══════════════════════════
+
+  # 3) Floci-AZ — main Azure engine (32 services, MIT) :4577
+  floci-az:
+    image: floci/floci-az:latest
+    container_name: zcs-floci-az
+    tty: true
+    ports:
+      - "4577:4577"
+    volumes:
+      - ./data/floci-az:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock   # Azure Functions real containers
+    environment:
+      FLOCI_AZ_STORAGE_MODE: hybrid            # docs-recommended (memory + 5s flush)
+      FLOCI_AZ_SERVICES_DOCKER_NETWORK: floci_default
+      FLOCI_AZ_TLS_ENABLED: "true"
+      FLOCI_AZ_HOSTNAME: floci-az
+    restart: unless-stopped
+    networks:
+      cloud:
+        aliases:
+          - floci-az
+          - localhost.floci.io
+
+  # 4) Azurite — Microsoft official storage emulator (MIT) :10000-10002
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: zcs-azurite
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --location /data --debug /data/debug.log --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - ./data/azurite:/data
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  # ══════════════════════════ GCP ══════════════════════════
+
+  # 5) Floci-GCP — main GCP engine (28 services, MIT) :4588
+  floci-gcp:
+    image: floci/floci-gcp:latest
+    container_name: zcs-floci-gcp
+    tty: true
+    ports:
+      - "4588:4588"
+    volumes:
+      - ./data/floci-gcp:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock   # Cloud Run/SQL real containers
+    environment:
+      FLOCI_GCP_STORAGE_MODE: hybrid
+      FLOCI_GCP_SERVICES_DOCKER_NETWORK: floci_default
+      FLOCI_GCP_HOSTNAME: floci-gcp
+      FLOCI_GCP_BASE_URL: http://floci-gcp:4588
+      FLOCI_GCP_TLS_ENABLED: "true"
+      FLOCI_GCP_TLS_HTTPS_PORT: "0"
+    restart: unless-stopped
+    networks:
+      cloud:
+        aliases:
+          - floci-gcp
+          - localhost.floci.io
+          - container.localhost.floci.io
+
+  # 6) fake-gcs-server — GCS standard emulator (BSD-2) :4443
+  fake-gcs:
+    image: fsouza/fake-gcs-server
+    container_name: zcs-fake-gcs
+    command: ["-scheme", "http", "-backend", "filesystem", "-filesystem-root", "/data"]
+    ports:
+      - "4443:4443"
+    volumes:
+      - ./data/fake-gcs:/data
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  # 7) Official gcloud emulators — gcp-ui inko expect karta hai
+  gcp-pubsub:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: zcs-gcp-pubsub
+    command: sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
+    ports:
+      - "8085:8085"
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx384m
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  gcp-firestore:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: zcs-gcp-firestore
+    command: sh -c 'gcloud beta emulators firestore start --host-port=0.0.0.0:8086'
+    ports:
+      - "8086:8086"
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx384m
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  gcp-datastore:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: zcs-gcp-datastore
+    command: |-
+      sh -c '(curl -fsSL "https://github.com/svenstaro/miniserve/releases/download/v$${MINISERVE_VERSION}/miniserve-$${MINISERVE_VERSION}-$$(arch)-unknown-linux-gnu" -o "$${MINISERVE_PATH}" && chmod +x "$${MINISERVE_PATH}" && mkdir -p /srv && "$${MINISERVE_PATH}" --port 9999 --upload-files --mkdir --enable-tar-gz --on-duplicate-files=overwrite --route-prefix /fs --header "Access-Control-Allow-Origin: *" --header "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS" --header "Access-Control-Allow-Headers: *" /srv || echo "miniserve skipped (import/export only)") & gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087'
+    ports:
+      - "8087:8087"
+      - "9999:9999"
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx384m
+      MINISERVE_VERSION: "0.32.0"
+      MINISERVE_PATH: /usr/local/bin/miniserve
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  # 8) Cloudbox — "LocalStack for GCP" extra services + Admin UI :8888
+  #    Conflict ports (4443/8085/8086) host pe 18xxx pe remap kiye hain
+  cloudbox:
+    image: omab/cloudbox:latest
+    container_name: zcs-cloudbox
+    ports:
+      - "18443:4443"   # Cloud Storage (cloudbox apna)
+      - "18080:8080"   # Firestore (cloudbox apna)
+      - "18085:8085"   # Pub/Sub gRPC (cloudbox apna)
+      - "18086:8086"   # Pub/Sub REST (cloudbox apna)
+      - "8090:8090"    # Secret Manager
+      - "8123:8123"    # Cloud Tasks
+      - "9050:9050"    # BigQuery
+      - "9010:9010"    # Cloud Spanner
+      - "9020:9020"    # Cloud Logging
+      - "8091:8091"    # Cloud Scheduler
+      - "8092:8092"    # Cloud KMS
+      - "8888:8888"    # Admin UI
+    environment:
+      CLOUDBOX_PROJECT: local-project
+      CLOUDBOX_LOCATION: us-central1
+      CLOUDBOX_DATA_DIR: /data
+    volumes:
+      - ./data/cloudbox:/data
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  # ══════════════════════════ GUIs ══════════════════════════
+
+  # 9) Floci UI — teeno clouds ka unified web console :4510
+  #    (NOTE: floci ka built-in AWS-only console khud :4500 pe auto-start hota hai)
+  floci-ui:
+    image: floci/floci-ui
+    container_name: zcs-floci-ui
+    ports:
+      - "4510:4500"
+    environment:
+      FLOCI_ENDPOINT: http://floci:4566
+      FLOCI_AZURE_ENDPOINT: http://floci-az:4577
+      FLOCI_AZURE_ACCOUNT_NAME: devstoreaccount1
+      FLOCI_AZURE_SUBSCRIPTION_ID: 00000000-0000-0000-0000-000000000000
+      FLOCI_AZURE_RESOURCE_GROUP: floci-local
+      FLOCI_GCP_ENDPOINT: http://floci-gcp:4588
+      FLOCI_GCP_PROJECT: floci-local
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  # 10) GCP Emulator UI — GCP deep data browser :9090
+  gcp-ui:
+    image: ghcr.io/drehelis/gcp-emulator-ui:main
+    container_name: zcs-gcp-ui
+    ports:
+      - "9090:80"
+    environment:
+      PUBSUB_EMULATOR_URL: host.docker.internal:8085
+      FIRESTORE_EMULATOR_URL: host.docker.internal:8086
+      DATASTORE_EMULATOR_URL: host.docker.internal:8087
+      DATASTORE_FILE_SERVER_URL: host.docker.internal:9999
+      STORAGE_EMULATOR_URL: host.docker.internal:4443
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - cloud
+
+  # 11) Landing page — dashboard of dashboards :3010
+  #     (:3000 pe pehle se koi aur app chal raha hai isliye 3010)
+  landing:
+    image: nginx:alpine
+    container_name: zcs-landing
+    ports:
+      - "3010:80"
+    volumes:
+      - ./landing:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - cloud

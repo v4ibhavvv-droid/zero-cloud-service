@@ -1,0 +1,24 @@
+# ═══════════════════════════════════════════════════════════════
+#  Zero Cloud Service — .gitignore
+# ═══════════════════════════════════════════════════════════════
+
+# ── Third-party repo clones ─────────────────────────────────────
+# Har engine/UI ka source of truth uska apna GitHub repo hai.
+# Humari repo sirf orchestration rakhti hai (compose + scripts + docs).
+# engines/gcp-cloudbox zaroorat pe bootstrap script khud clone kar leta hai.
+engines/*
+!engines/aws-official-docker/
+uis/
+
+# ── Runtime state — NEVER publish ───────────────────────────────
+# data/ me emulator-generated credentials + tumhara saara cloud data hai.
+data/
+
+# ── Test artifacts / OS junk ────────────────────────────────────
+samples/node_modules/
+samples/package.json
+samples/package-lock.json
+node_modules/
+*.log
+.DS_Store
+__pycache__/
