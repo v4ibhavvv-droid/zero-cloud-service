@@ -3,23 +3,23 @@
 #  Har sync pe scripts/check-upstream.sh ise regenerate karta hai.
 #  Matlab: ye stack upstream repos ke in commits/tags tak track karta hai.
 # ═══════════════════════════════════════════════════════════════
-last_synced: "2026-11-15T14:53:04Z"
+last_synced: "2026-11-16T11:50:20Z"
 repos:
   "floci-io/floci":
     branch: "main"
-    sha: "4fc41cc683e52c6af879cd92820a24bd445d5e12"
+    sha: "4a5d5fbb49235d4a476ef150e9e81fd8fab6d965"
     release: "2.5.0"
   "floci-io/floci-az":
     branch: "main"
-    sha: "226c6dcdbad629e9d840b9b19ef6fb3c7de7209d"
+    sha: "c4c2e2dd5ef189780a85c0478a3feffb0160b1f0"
     release: "0.17.0"
   "floci-io/floci-gcp":
     branch: "main"
-    sha: "98829d47d8cf6ac7000eb2ed12f45259522339fd"
+    sha: "dbd70c961502557f97ac810b0ce98ef4d6bae575"
     release: "0.13.0"
   "floci-io/floci-ui":
     branch: "main"
-    sha: "bf389ea220cbb8ec75debc52b9090008ece3adb3"
+    sha: "60a65cac217a66fbfaf0486fe02b1d86a4239ec3"
     release: "0.7.0"
   "aws/aws-emulator":
     branch: "main"
@@ -35,7 +35,7 @@ repos:
     release: "v1.56.1"
   "drehelis/gcp-emulator-ui":
     branch: "main"
-    sha: "3fe08b7ee0bfb2f43c2080e8d584379ba3d11844"
+    sha: "b06f978a08f0db2767b8e5bf40bd0601139b681a"
     release: "v0.0.24"
   "omab/cloudbox":
     branch: "main"
