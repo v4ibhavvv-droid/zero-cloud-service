@@ -3,28 +3,28 @@
 #  Har sync pe scripts/check-upstream.sh ise regenerate karta hai.
 #  Matlab: ye stack upstream repos ke in commits/tags tak track karta hai.
 # ═══════════════════════════════════════════════════════════════
-last_synced: "2026-11-24T14:02:35Z"
+last_synced: "2026-11-25T13:16:50Z"
 repos:
   "floci-io/floci":
     branch: "main"
-    sha: "0c4fa969e32502f29e0c734e0d807f7305d231f6"
+    sha: "bf13478d039c69b377b3009233510c4a008f974c"
     release: "2.5.0"
   "floci-io/floci-az":
     branch: "main"
-    sha: "6ad9b2689d2931ae787f1486c2535f00db927ff5"
+    sha: "e55b306581745090934f5ae33585e9997d6ac933"
     release: "0.17.0"
   "floci-io/floci-gcp":
     branch: "main"
-    sha: "e29d463259742928822ac72fcd1639fe419af5d7"
+    sha: "0ecc9792c74679a431febe5ef1866d88a90b547d"
     release: "0.13.0"
   "floci-io/floci-ui":
     branch: "main"
-    sha: "74bc48d4760551c170e8997a480e11af7bfaf55c"
+    sha: "d518ec04fc44b31b1b7e779120a7216e8c926c08"
     release: "0.8.0"
   "aws/aws-emulator":
     branch: "main"
-    sha: "6b54570bca2b9daa393bc9703bb0a096216f77cd"
-    release: "v1.0.603"
+    sha: "7ce46e2ec7daea03f5b998d8aff6c247aac00dc8"
+    release: "v1.0.611"
   "Azure/Azurite":
     branch: "main"
     sha: "f049fde4517aa76917266dc637ff525f8990210b"
